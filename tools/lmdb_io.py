@@ -1,7 +1,6 @@
 """
 Module for comfortably reading and writing LMDBs.
 """
-
 import lmdb
 import numpy
 import re
@@ -23,7 +22,11 @@ def version_compare(version_a, version_b):
     """
     def normalize(v):
         return [int(x) for x in re.sub(r'(\.0+)*$','', v).split(".")]
-        
+
+    # for python 3.x
+    def cmp(a, b):
+      return (a > b) - (a < b)
+       
     return cmp(normalize(version_a), normalize(version_b))
     
 def to_key(i):
@@ -210,11 +213,13 @@ class LMDB:
                 datum.height = images[i].shape[0]
                 datum.width = images[i].shape[1]
                 
-                assert version_compare(numpy.version.version, '1.9') < 0, "installed numpy is 1.9 or higher, change .tostring() to .tobytes()"
+                #print(f"numpy.version.version: {numpy.version.version}")
+                #assert version_compare(numpy.version.version, '1.9') < 0, "installed numpy is 1.9 or higher, change .tostring() to .tobytes()"
                 assert images[i].dtype == numpy.uint8 or images[i].dtype == numpy.float, "currently only numpy.uint8 and numpy.float images are supported"
                 
                 if images[i].dtype == numpy.uint8:
-                    datum.data = images[i].transpose(2, 0, 1).tostring()
+                    # datum.data = images[i].transpose(2, 0, 1).tostring()
+                    datum.data = images[i].transpose(2, 0, 1).tobytes()  
                 else:
                     datum.float_data.extend(images[i].transpose(2, 0, 1).flat)
                     
